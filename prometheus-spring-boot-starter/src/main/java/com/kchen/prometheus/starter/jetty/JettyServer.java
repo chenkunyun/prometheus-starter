@@ -8,10 +8,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
-/**
- * rpc jetty server
- * @author xuxueli 2015-11-19 22:29:03
- */
 public class JettyServer {
 
 	private Server server;
@@ -19,34 +15,27 @@ public class JettyServer {
 
 	public void start(String host, Integer port, String contextPath, String path) throws Exception {
 
-		thread = new Thread(new Runnable() {
-			@Override
-			public void run() {
+		thread = new Thread(() -> {
+            server = new Server(new ExecutorThreadPool());  // 非阻塞
 
-				// The Server
-				server = new Server(new ExecutorThreadPool());  // 非阻塞
+            ServerConnector connector = new ServerConnector(server);
+            connector.setHost(host);
+            connector.setPort(port);
+            server.setConnectors(new Connector[]{connector});
 
-				// HTTP connector
-				ServerConnector connector = new ServerConnector(server);
-				connector.setHost(host);
-				connector.setPort(port);
-				server.setConnectors(new Connector[]{connector});
-
-				ServletContextHandler context = new ServletContextHandler();
-				context.setContextPath(contextPath);
-				server.setHandler(context);
-				context.addServlet(new ServletHolder(new MetricsServlet()), path);
-				try {
-					// Start the server
-					server.start();
-					server.join();	// block until thread stopped
-				} catch (Exception e) {
-				} finally {
-					destroy();
-				}
-			}
-		});
-		thread.setDaemon(true);	// daemon, service jvm, user thread leave >>> daemon leave >>> jvm leave
+            ServletContextHandler context = new ServletContextHandler();
+            context.setContextPath(contextPath);
+            server.setHandler(context);
+            context.addServlet(new ServletHolder(new MetricsServlet()), path);
+            try {
+                server.start();
+                server.join();
+            } catch (Exception e) {
+            } finally {
+                destroy();
+            }
+        });
+		thread.setDaemon(true);
 		thread.start();
 	}
 
