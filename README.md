@@ -11,7 +11,7 @@ An embed jetty server is used to expose a local port for prometheus server to pu
     <version>1.0-SNAPSHOT</version>
 </dependency>
 ```
-1. Add the following in your __application.yml__：
+2. Add the following in your __application.yml__：
 ```
 prometheus:
   host: localhost
@@ -19,7 +19,7 @@ prometheus:
   contextPath: /
   path: /metrics
 ```
-1. Add ```metrics``` in your code
+3. Add ```metrics``` in your code
 ```
 @RestController
 @RequestMapping("/")
